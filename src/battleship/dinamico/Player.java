@@ -11,7 +11,7 @@ package battleship.dinamico;
 public class Player {
     private String username;
     private String password;
-    private int puntos
+    private int puntos;
     // Historial de ultimos 10 juegos 
     private String[] logs; 
 
@@ -21,5 +21,4 @@ public class Player {
         this.puntos = 0; 
         this.logs = new String[10];
     }
-   
 }
