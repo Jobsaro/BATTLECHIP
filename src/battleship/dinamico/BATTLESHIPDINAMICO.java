@@ -10,5 +10,15 @@ package battleship.dinamico;
  */
 public class BATTLESHIPDINAMICO {
 
+<<<<<<< HEAD
   
+=======
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        System.out.println("XD");
+    }
+    
+>>>>>>> 4c2a5abe921573a93e50ca2a86897b58a6a39d42
 }
