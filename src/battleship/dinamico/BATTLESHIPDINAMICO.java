@@ -10,11 +10,5 @@ package battleship.dinamico;
  */
 public class BATTLESHIPDINAMICO {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-    }
-    
+  
 }
