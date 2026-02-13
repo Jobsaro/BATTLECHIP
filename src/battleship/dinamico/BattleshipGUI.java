@@ -1,199 +1,170 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package battleship.dinamico;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 public class BattleshipGUI extends JFrame {
-
     private JButton[][] botones = new JButton[8][8];
-    private BattleshipLogica logica = new BattleshipLogica();
-    private Barco seleccionado = null;
+    private Battleship logicaJ1 = new Battleship();
+    private Battleship logicaJ2 = new Battleship();
+    private char[][] disparosJ1 = new char[8][8]; 
+    private char[][] disparosJ2 = new char[8][8];
+    private Battleship.Barco seleccionado = null;
+    private boolean turnoJugador1 = true;
+    private JLabel lblTurno;
+    private String nombreJ1, nombreJ2;
 
-    public BattleshipGUI() {
-        setTitle("BATTLESHIP - CONFIGURACIÓN DE FLOTA");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(650, 750); // Ajustado para dar espacio a los botones inferiores
-        setLocationRelativeTo(null);
-        
-        // Usamos BorderLayout para separar el tablero de los botones de control
+    public BattleshipGUI(Player p1, Player p2) {
+        this.nombreJ1 = p1.getUsername().toUpperCase();
+        this.nombreJ2 = p2.getUsername().toUpperCase();
+
+        setTitle("BATTLESHIP PRO - " + nombreJ1 + " VS " + nombreJ2);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(500, 650);
         setLayout(new BorderLayout());
 
-        // --- PANEL DEL TABLERO (CENTRO) ---
+        lblTurno = new JLabel(nombreJ1 + ": PREPARA TU FLOTA", SwingConstants.CENTER);
+        lblTurno.setFont(new Font("Arial", Font.BOLD, 16));
+        lblTurno.setPreferredSize(new Dimension(500, 40));
+        add(lblTurno, BorderLayout.NORTH);
+
         JPanel panelTablero = new JPanel(new GridLayout(8, 8));
-        inicializarTablero(panelTablero);
-        add(panelTablero, BorderLayout.CENTER);
-
-        // --- PANEL DE BOTONES (SUR) ---
-        JPanel panelControles = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
-        
-        // Botón Abandonar
-        JButton btnAbandonar = new JButton("ABANDONAR");
-        btnAbandonar.setBackground(new Color(200, 0, 0));
-        btnAbandonar.setForeground(Color.WHITE);
-        btnAbandonar.setFocusPainted(false);
-        btnAbandonar.setFont(new Font("Arial", Font.BOLD, 13));
-        btnAbandonar.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this, "¿Seguro que quieres abandonar?", "Salir", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) System.exit(0);
-        });
-
-        // Botón Listo
-        JButton btnListo = new JButton("LISTO");
-        btnListo.setBackground(new Color(0, 150, 0));
-        btnListo.setForeground(Color.WHITE);
-        btnListo.setFocusPainted(false);
-        btnListo.setFont(new Font("Arial", Font.BOLD, 13));
-        btnListo.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "¡Flota Confirmada! Preparando tablero de batalla...");
-        });
-
-        panelControles.add(btnAbandonar);
-        panelControles.add(btnListo);
-        add(panelControles, BorderLayout.SOUTH);
-
-        refrescarTablero();
-    }
-
-    private void inicializarTablero(JPanel panel) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 botones[i][j] = new JButton();
+                botones[i][j].setPreferredSize(new Dimension(55, 55));
                 int f = i, c = j;
-
-                botones[i][j].addActionListener(e -> {
-                    Barco clicEn = logica.getBarcoEn(f, c);
-
-                    if (seleccionado == null) {
-                        if (clicEn != null) {
-                            seleccionado = clicEn;
-                        }
-                    } else {
-                        if (clicEn == seleccionado) {
-                            logica.intentarRotar(seleccionado);
-                        } else {
-                            logica.moverBarco(seleccionado, f, c);
-                        }
-                        seleccionado = null;
-                    }
-                    refrescarTablero();
-                });
-                panel.add(botones[i][j]);
+                botones[i][j].addActionListener(e -> alHacerClic(f, c));
+                panelTablero.add(botones[i][j]);
             }
         }
+        add(panelTablero, BorderLayout.CENTER);
+
+        JPanel panelBotones = new JPanel(new GridLayout(1, 2, 10, 0));
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JButton btnListo = new JButton("LISTO / SIGUIENTE");
+        JButton btnSalir = new JButton("ABANDONAR PARTIDA");
+        
+        btnSalir.setBackground(new Color(150, 50, 50));
+        btnSalir.setForeground(Color.WHITE);
+
+        btnListo.addActionListener(e -> pasarTurno(btnListo));
+        btnSalir.addActionListener(e -> {
+            if(JOptionPane.showConfirmDialog(this, "¿Rendirse?") == 0) this.dispose();
+        });
+
+        panelBotones.add(btnListo); panelBotones.add(btnSalir);
+        add(panelBotones, BorderLayout.SOUTH);
+
+        refrescarTablero();
+        setLocationRelativeTo(null);
+    }
+
+    private void alHacerClic(int f, int c) {
+        Battleship actual = turnoJugador1 ? logicaJ1 : logicaJ2;
+        Battleship oponente = turnoJugador1 ? logicaJ2 : logicaJ1;
+        char[][] misDisparos = turnoJugador1 ? disparosJ1 : disparosJ2;
+
+        if (logicaJ1.isFaseAtaque() && logicaJ2.isFaseAtaque()) {
+            if (misDisparos[f][c] != 0) return; 
+            Battleship.Barco b = oponente.getBarcoEn(f, c);
+            if (b != null) {
+                misDisparos[f][c] = 'X';
+                refrescarTablero();
+            } else {
+                misDisparos[f][c] = 'F';
+                refrescarTablero();
+                JOptionPane.showMessageDialog(this, "Agua... Cambio de turno.");
+                cambiarTurnoVisual();
+            }
+        } else {
+            Battleship.Barco clicEn = actual.getBarcoEn(f, c);
+            if (seleccionado == null) {
+                if (clicEn != null) seleccionado = clicEn;
+            } else {
+                if (clicEn == seleccionado) actual.intentarRotar(seleccionado);
+                else actual.moverBarco(seleccionado, f, c);
+                seleccionado = null;
+            }
+            refrescarTablero();
+        }
+    }
+
+    private void pasarTurno(JButton btn) {
+        if (!logicaJ1.isFaseAtaque()) {
+            logicaJ1.activarFaseAtaque();
+            turnoJugador1 = false;
+            lblTurno.setText(nombreJ2 + ": PREPARA TU FLOTA");
+        } else if (!logicaJ2.isFaseAtaque()) {
+            logicaJ2.activarFaseAtaque();
+            turnoJugador1 = true;
+            lblTurno.setText("ATAQUE: TURNO DE " + nombreJ1);
+            btn.setEnabled(false);
+        }
+        refrescarTablero();
+    }
+
+    private void cambiarTurnoVisual() {
+        turnoJugador1 = !turnoJugador1;
+        lblTurno.setText("ATAQUE: TURNO DE " + (turnoJugador1 ? nombreJ1 : nombreJ2));
+        refrescarTablero();
     }
 
     private void refrescarTablero() {
+        Battleship actual = turnoJugador1 ? logicaJ1 : logicaJ2;
+        // El oponente es el que recibe los disparos en fase de ataque
+        Battleship oponente = turnoJugador1 ? logicaJ2 : logicaJ1; 
+        char[][] misDisparos = turnoJugador1 ? disparosJ1 : disparosJ2;
+        boolean faseAtaqueTotal = logicaJ1.isFaseAtaque() && logicaJ2.isFaseAtaque();
+
+        Color colorAgua = new Color(30, 144, 255);
+        Color colorBarco = Color.DARK_GRAY;
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                botones[i][j].setBackground(new Color(0, 100, 200));
-                botones[i][j].setBorder(UIManager.getBorder("Button.border"));
                 botones[i][j].setText("");
-            }
-        }
+                botones[i][j].setBorder(UIManager.getBorder("Button.border"));
 
-        for (Barco b : logica.getBarcos()) {
-            for (int i = b.fila; i < b.fila + b.alto; i++) {
-                for (int j = b.col; j < b.col + b.ancho; j++) {
-                    botones[i][j].setBackground(Color.DARK_GRAY);
-                    if (b == seleccionado) {
-                        botones[i][j].setBorder(new LineBorder(Color.BLACK, 4));
+                if (faseAtaqueTotal) {
+                    // --- FASE DE ATAQUE ---
+                    if (misDisparos[i][j] == 'X') {
+                        botones[i][j].setBackground(Color.RED);
+                        botones[i][j].setText("X");
+                    } else if (misDisparos[i][j] == 'F') {
+                        botones[i][j].setBackground(new Color(150, 200, 255));
+                        botones[i][j].setText("F");
+                    } else {
+                        // AQUÍ APLICAMOS LA REGLA DE VISIBILIDAD EN ATAQUE
+                        Battleship.Barco bEnOponente = oponente.getBarcoEn(i, j);
+                        if (bEnOponente != null && Battleship.modoJuego.equalsIgnoreCase("TUTORIAL")) {
+                            botones[i][j].setBackground(colorBarco); // Visible en Tutorial
+                        } else {
+                            botones[i][j].setBackground(colorAgua); // Oculto en Arcade
+                        }
+                    }
+                } else {
+                    // --- FASE DE PREPARACIÓN (Selección y movimiento) ---
+                    // En esta fase, los barcos SIEMPRE deben ser visibles para el jugador actual
+                    // independientemente de si es Arcade o Tutorial, para poder acomodarlos.
+                    Battleship.Barco b = actual.getBarcoEn(i, j);
+
+                    if (b != null) {
+                        botones[i][j].setBackground(colorBarco);
+
+                        if (b == seleccionado) {
+                            botones[i][j].setBorder(new LineBorder(Color.YELLOW, 3));
+                        }
+                    } else {
+                        botones[i][j].setBackground(colorAgua);
                     }
                 }
             }
         }
     }
-
+}
+/*
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new BattleshipGUI().setVisible(true));
     }
-}
-
-// --- CLASES DE LÓGICA ---
-
-class Barco {
-    String nombre;
-    int fila, col, alto, ancho;
-
-    Barco(String nombre, int alto, int ancho) {
-        this.nombre = nombre;
-        this.alto = alto;
-        this.ancho = ancho;
-    }
-
-    public void rotar() {
-        int temp = alto;
-        alto = ancho;
-        ancho = temp;
-    }
-}
-
-class BattleshipLogica {
-    private List<Barco> barcos = new ArrayList<>();
-
-    public BattleshipLogica() {
-        barcos.add(new Barco("Portaaviones", 2, 3));
-        barcos.add(new Barco("Acorazado", 4, 1));
-        barcos.add(new Barco("Submarino", 3, 1));
-        barcos.add(new Barco("Destructor", 2, 1));
-        posicionarAleatoriamente();
-    }
-
-    private void posicionarAleatoriamente() {
-        Random r = new Random();
-        for (Barco b : barcos) {
-            boolean exito = false;
-            while (!exito) {
-                int f = r.nextInt(8), c = r.nextInt(8);
-                if (r.nextBoolean()) b.rotar();
-
-                if (f + b.alto <= 8 && c + b.ancho <= 8) {
-                    b.fila = f; b.col = c;
-                    if (!hayColision(b)) exito = true;
-                }
-            }
-        }
-    }
-
-    public boolean hayColision(Barco b1) {
-        for (Barco b2 : barcos) {
-            if (b1 == b2) continue;
-            if (b1.fila < b2.fila + b2.alto && b1.fila + b1.alto > b2.fila &&
-                b1.col < b2.col + b2.ancho && b1.col + b1.ancho > b2.col) return true;
-        }
-        return false;
-    }
-
-    public void moverBarco(Barco b, int nf, int nc) {
-        int fOriginal = b.fila, cOriginal = b.col;
-        if (nf + b.alto <= 8 && nc + b.ancho <= 8) {
-            b.fila = nf; b.col = nc;
-            if (hayColision(b)) {
-                b.fila = fOriginal; b.col = cOriginal;
-            }
-        }
-    }
-
-    public void intentarRotar(Barco b) {
-        b.rotar();
-        if (b.fila + b.alto > 8 || b.col + b.ancho > 8 || hayColision(b)) {
-            b.rotar();
-        }
-    }
-
-    public Barco getBarcoEn(int f, int c) {
-        for (Barco b : barcos) {
-            if (f >= b.fila && f < b.fila + b.alto && c >= b.col && c < b.col + b.ancho) return b;
-        }
-        return null;
-    }
-
-    public List<Barco> getBarcos() { return barcos; }
-}
+*/
