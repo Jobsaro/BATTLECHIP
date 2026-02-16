@@ -48,7 +48,7 @@ public class BattleshipGUI extends JFrame {
 
         JPanel panelBotones = new JPanel(new GridLayout(1, 2, 10, 0));
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        JButton btnListo = new JButton("LISTO / SIGUIENTE");
+        JButton btnListo = new JButton("LISTO");
         JButton btnSalir = new JButton("ABANDONAR PARTIDA");
         
         btnSalir.setBackground(new Color(150, 50, 50));
@@ -83,7 +83,7 @@ public class BattleshipGUI extends JFrame {
             } else {
                 misDisparos[f][c] = 'F';
                 refrescarTablero();
-                JOptionPane.showMessageDialog(this, "Agua... Cambio de turno.");
+                JOptionPane.showMessageDialog(this, "Al agua... Cambio de turno.");
                 cambiarTurnoVisual();
             }
         } else {
