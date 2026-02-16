@@ -13,9 +13,14 @@ public class BattleshipGUI extends JFrame {
     private Battleship.Barco seleccionado = null;
     private boolean turnoJugador1 = true;
     private JLabel lblTurno;
+    
+    // Guardamos los objetos de Player para actualizar sus datos al final
+    private Player player1, player2;
     private String nombreJ1, nombreJ2;
 
     public BattleshipGUI(Player p1, Player p2) {
+        this.player1 = p1;
+        this.player2 = p2;
         this.nombreJ1 = p1.getUsername().toUpperCase();
         this.nombreJ2 = p2.getUsername().toUpperCase();
 
@@ -51,7 +56,7 @@ public class BattleshipGUI extends JFrame {
 
         btnListo.addActionListener(e -> pasarTurno(btnListo));
         btnSalir.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(this, "¿Rendirse?") == 0) this.dispose();
+            if(JOptionPane.showConfirmDialog(this, "Rendirse?") == 0) this.dispose();
         });
 
         panelBotones.add(btnListo); panelBotones.add(btnSalir);
@@ -62,7 +67,6 @@ public class BattleshipGUI extends JFrame {
     }
 
     private void alHacerClic(int f, int c) {
-        Battleship actual = turnoJugador1 ? logicaJ1 : logicaJ2;
         Battleship oponente = turnoJugador1 ? logicaJ2 : logicaJ1;
         char[][] misDisparos = turnoJugador1 ? disparosJ1 : disparosJ2;
 
@@ -72,6 +76,10 @@ public class BattleshipGUI extends JFrame {
             if (b != null) {
                 misDisparos[f][c] = 'X';
                 refrescarTablero();
+                
+                if (verificarVictoria(misDisparos, oponente)) {
+                    completarDatosYFinalizar();
+                }
             } else {
                 misDisparos[f][c] = 'F';
                 refrescarTablero();
@@ -79,6 +87,7 @@ public class BattleshipGUI extends JFrame {
                 cambiarTurnoVisual();
             }
         } else {
+            Battleship actual = turnoJugador1 ? logicaJ1 : logicaJ2;
             Battleship.Barco clicEn = actual.getBarcoEn(f, c);
             if (seleccionado == null) {
                 if (clicEn != null) seleccionado = clicEn;
@@ -89,6 +98,45 @@ public class BattleshipGUI extends JFrame {
             }
             refrescarTablero();
         }
+    }
+
+    private boolean verificarVictoria(char[][] misDisparos, Battleship oponente) {
+        int impactosNecesarios = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (oponente.getBarcoEn(i, j) != null) impactosNecesarios++;
+            }
+        }
+
+        int impactosLogrados = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (misDisparos[i][j] == 'X') impactosLogrados++;
+            }
+        }
+        return impactosLogrados == impactosNecesarios;
+    }
+
+    //se completan los datos de las demas clases
+    private void completarDatosYFinalizar() {
+        Player ganador = turnoJugador1 ? player1 : player2;
+        Player perdedor = turnoJugador1 ? player2 : player1;
+
+        // Sumar puntos al ganador (3 puntos por victoria)
+        ganador.addPuntos(3);
+
+        //Registrar en el historial de ambos
+        ganador.registrarJuego("Victoria contra " + perdedor.getUsername());
+        perdedor.registrarJuego("Derrota contra " + ganador.getUsername());
+
+        // Pantalla de victoria
+        JPanel panelVic = new JPanel(new BorderLayout());
+        JLabel txt = new JLabel("<html><center>¡VICTORIA!<br><br><b>" + ganador.getUsername() + "</b> ha ganado.<br>+3 Puntos obtenidos.</center></html>", SwingConstants.CENTER);
+        panelVic.add(txt);
+
+        JOptionPane.showMessageDialog(this, panelVic, "Juego Terminado", JOptionPane.PLAIN_MESSAGE);
+        
+        this.dispose();
     }
 
     private void pasarTurno(JButton btn) {
@@ -113,13 +161,9 @@ public class BattleshipGUI extends JFrame {
 
     private void refrescarTablero() {
         Battleship actual = turnoJugador1 ? logicaJ1 : logicaJ2;
-        // El oponente es el que recibe los disparos en fase de ataque
         Battleship oponente = turnoJugador1 ? logicaJ2 : logicaJ1; 
         char[][] misDisparos = turnoJugador1 ? disparosJ1 : disparosJ2;
         boolean faseAtaqueTotal = logicaJ1.isFaseAtaque() && logicaJ2.isFaseAtaque();
-
-        Color colorAgua = new Color(30, 144, 255);
-        Color colorBarco = Color.DARK_GRAY;
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -127,36 +171,30 @@ public class BattleshipGUI extends JFrame {
                 botones[i][j].setBorder(UIManager.getBorder("Button.border"));
 
                 if (faseAtaqueTotal) {
-                    // --- FASE DE ATAQUE ---
                     if (misDisparos[i][j] == 'X') {
                         botones[i][j].setBackground(Color.RED);
                         botones[i][j].setText("X");
+                        Battleship.Barco b = oponente.getBarcoEn(i, j);
+                        if (b != null && b.estaHundido(misDisparos)) {
+                            botones[i][j].setBorder(new LineBorder(Color.YELLOW, 3));
+                        }
                     } else if (misDisparos[i][j] == 'F') {
                         botones[i][j].setBackground(new Color(150, 200, 255));
                         botones[i][j].setText("F");
                     } else {
-                        // AQUÍ APLICAMOS LA REGLA DE VISIBILIDAD EN ATAQUE
-                        Battleship.Barco bEnOponente = oponente.getBarcoEn(i, j);
-                        if (bEnOponente != null && Battleship.modoJuego.equalsIgnoreCase("TUTORIAL")) {
-                            botones[i][j].setBackground(colorBarco); // Visible en Tutorial
+                        if (oponente.getBarcoEn(i, j) != null && Battleship.modoJuego.equalsIgnoreCase("TUTORIAL")) {
+                            botones[i][j].setBackground(Color.DARK_GRAY);
                         } else {
-                            botones[i][j].setBackground(colorAgua); // Oculto en Arcade
+                            botones[i][j].setBackground(new Color(30, 144, 255));
                         }
                     }
                 } else {
-                    // --- FASE DE PREPARACIÓN (Selección y movimiento) ---
-                    // En esta fase, los barcos SIEMPRE deben ser visibles para el jugador actual
-                    // independientemente de si es Arcade o Tutorial, para poder acomodarlos.
                     Battleship.Barco b = actual.getBarcoEn(i, j);
-
                     if (b != null) {
-                        botones[i][j].setBackground(colorBarco);
-
-                        if (b == seleccionado) {
-                            botones[i][j].setBorder(new LineBorder(Color.YELLOW, 3));
-                        }
+                        botones[i][j].setBackground(Color.DARK_GRAY);
+                        if (b == seleccionado) botones[i][j].setBorder(new LineBorder(Color.YELLOW, 3));
                     } else {
-                        botones[i][j].setBackground(colorAgua);
+                        botones[i][j].setBackground(new Color(30, 144, 255));
                     }
                 }
             }

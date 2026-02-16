@@ -15,13 +15,13 @@ public class Player {
         this.historial = new ArrayList<>();
     }
 
-    // --- MÉTODOS GETTERS (YA LOS TENÍAS) ---
+    //metodos getters
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public int getPuntos() { return puntos; }
     public ArrayList<String> getHistorial() { return historial; }
 
-    // --- MÉTODOS SETTERS (ESTOS SON LOS QUE TE FALTABAN) ---
+    // metodos setters
     public void setUsername(String username) {
         this.username = username;
     }
@@ -30,7 +30,7 @@ public class Player {
         this.password = password;
     }
 
-    // --- MÉTODOS DE LÓGICA ---
+    //metodos de logica
     public void addPuntos(int p) { 
         this.puntos += p; 
     }

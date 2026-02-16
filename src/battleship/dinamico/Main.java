@@ -10,11 +10,12 @@ public class Main extends JFrame {
     private JTextField txtUserLogin, txtUserReg;
     private JPasswordField txtPassLogin, txtPassReg;
     private JButton btnCancelarP2; 
+    private JButton btnSalirApp; 
     private boolean identificandoOponente = false;
 
     public Main() {
         setTitle("BATTLESHIP - SISTEMA");
-        setSize(400, 650); // Aumenté un poco el alto para que quepan bien los botones
+        setSize(400, 650);
         setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -34,29 +35,27 @@ public class Main extends JFrame {
         cardLayout.show(panelContenedor, "LOGIN");
     }
 
-    // --- 1. PANEL DE LOGIN (MODIFICADO CON BOTÓN SALIR) ---
+    // panel de login
     private JPanel crearPanelLogin() {
-        JPanel p = new JPanel(new GridLayout(11, 1, 10, 10)); // Aumenté a 11 filas
+        JPanel p = new JPanel(new GridLayout(11, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
         p.setBackground(new Color(33, 37, 43));
 
-        JLabel titulo = new JLabel("BATTLESHIP LOGIN", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("BATTLESHIP", SwingConstants.CENTER);
         titulo.setForeground(Color.WHITE);
         titulo.setFont(new Font("Arial", Font.BOLD, 22));
 
         txtUserLogin = new JTextField();
         txtPassLogin = new JPasswordField();
-        JButton btnEntrar = new JButton("INICIAR SESIÓN");
+        JButton btnEntrar = new JButton("INICIAR SESION");
         JButton btnIrReg = new JButton("CREAR CUENTA");
         
-        // Botón Cancelar (Para el Jugador 2)
         btnCancelarP2 = new JButton("CANCELAR (VOLVER)");
         btnCancelarP2.setBackground(new Color(150, 50, 50));
         btnCancelarP2.setForeground(Color.WHITE);
         btnCancelarP2.setVisible(false);
 
-        // NUEVO BOTÓN: SALIR DEL JUEGO
-        JButton btnSalirApp = new JButton("SALIR DEL JUEGO");
+        btnSalirApp = new JButton("SALIR DEL JUEGO");
         btnSalirApp.setBackground(Color.BLACK);
         btnSalirApp.setForeground(Color.WHITE);
         btnSalirApp.setFocusPainted(false);
@@ -66,13 +65,13 @@ public class Main extends JFrame {
         p.add(txtUserLogin);
         p.add(new JLabel("Contraseña:")).setForeground(Color.GRAY);
         p.add(txtPassLogin);
-        p.add(new JLabel()); // Espaciador
+        p.add(new JLabel()); 
         p.add(btnEntrar); 
         p.add(btnIrReg); 
         p.add(btnCancelarP2);
-        p.add(btnSalirApp); // Agregamos el botón salir al final
+        p.add(btnSalirApp);
 
-        // Lógica de Entrar
+        //logia para entrar
         btnEntrar.addActionListener(e -> {
             String u = txtUserLogin.getText().trim();
             String ps = new String(txtPassLogin.getPassword()).trim();
@@ -89,6 +88,7 @@ public class Main extends JFrame {
                     }
                     identificandoOponente = false;
                     btnCancelarP2.setVisible(false);
+                    btnSalirApp.setVisible(true); // Reaparece para el futuro
                     new BattleshipGUI(Battleship.currentUser, player).setVisible(true);
                     cardLayout.show(panelContenedor, "MENU_PRINCIPAL");
                 }
@@ -98,24 +98,20 @@ public class Main extends JFrame {
             }
         });
 
-        // Lógica Registro
         btnIrReg.addActionListener(e -> {
             limpiarRegistro();
             cardLayout.show(panelContenedor, "REGISTRO");
         });
 
-        // Lógica Cancelar P2
         btnCancelarP2.addActionListener(e -> {
             identificandoOponente = false;
             btnCancelarP2.setVisible(false);
+            btnSalirApp.setVisible(true); 
             limpiarLogin();
             cardLayout.show(panelContenedor, "MENU_PRINCIPAL");
         });
 
-        // Lógica Salir del Programa
-        btnSalirApp.addActionListener(e -> {
-            System.exit(0); // Cierra toda la aplicación
-        });
+        btnSalirApp.addActionListener(e -> System.exit(0));
 
         return p;
     }
@@ -130,7 +126,7 @@ public class Main extends JFrame {
         txtPassReg.setText("");
     }
 
-    // --- 2. PANEL DE REGISTRO ---
+    //panel de registro
     private JPanel crearPanelRegistro() {
         JPanel p = new JPanel(new GridLayout(8, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));
@@ -170,7 +166,7 @@ public class Main extends JFrame {
         return p;
     }
 
-    // --- 3. PANEL MENÚ PRINCIPAL ---
+    //panel del menu principal
     private JPanel crearPanelMenuPrincipal() {
         JPanel p = new JPanel(new GridLayout(7, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
@@ -197,27 +193,27 @@ public class Main extends JFrame {
         btnJugar.addActionListener(e -> {
             identificandoOponente = true;
             btnCancelarP2.setVisible(true);
+            btnSalirApp.setVisible(false);
             limpiarLogin();
             JOptionPane.showMessageDialog(this, "Se requiere autenticación del Jugador 2.");
             cardLayout.show(panelContenedor, "LOGIN");
         });
 
         btnConfig.addActionListener(e -> cardLayout.show(panelContenedor, "CONFIGURACION"));
-        
         btnReportes.addActionListener(e -> cardLayout.show(panelContenedor, "REPORTES"));
-        
         btnPerfil.addActionListener(e -> cardLayout.show(panelContenedor, "PERFIL"));
 
         btnSalir.addActionListener(e -> {
             Battleship.currentUser = null;
             limpiarLogin();
+            btnSalirApp.setVisible(true); 
             cardLayout.show(panelContenedor, "LOGIN");
         });
 
         return p;
     }
 
-    // --- 4. PANEL DE REPORTES ---
+    // panel de reportes
     private JPanel crearPanelReportes() {
         JPanel p = new JPanel(new GridLayout(7, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
@@ -227,7 +223,7 @@ public class Main extends JFrame {
         titulo.setForeground(new Color(0, 255, 150));
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
 
-        JButton btnUltimos = new JButton("a. Últimos juegos");
+        JButton btnUltimos = new JButton("a. Ultimos juegos");
         JButton btnRanking = new JButton("b. Ranking de Jugadores");
         JButton btnVolver = new JButton("c. Regresar al Menú");
 
@@ -237,7 +233,7 @@ public class Main extends JFrame {
 
         btnUltimos.addActionListener(e -> {
             if (Battleship.currentUser != null) {
-                StringBuilder sb = new StringBuilder("ÚLTIMOS 10 JUEGOS DE: " + Battleship.currentUser.getUsername() + "\n\n");
+                StringBuilder sb = new StringBuilder("ULTIMOS 10 JUEGOS DE: " + Battleship.currentUser.getUsername() + "\n\n");
                 ArrayList<String> historial = Battleship.currentUser.getHistorial();
                 for (int i = 0; i < 10; i++) {
                     sb.append((i + 1)).append("- ");
@@ -275,27 +271,26 @@ public class Main extends JFrame {
         JOptionPane.showMessageDialog(this, scroll, titulo, JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // --- 5. PANEL DE PERFIL ---
+    //panel de perfil
     private JPanel crearPanelPerfil() {
         JPanel p = new JPanel(new GridLayout(7, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
         p.setBackground(new Color(25, 25, 30));
 
         JLabel titulo = new JLabel("MI PERFIL", SwingConstants.CENTER);
-        titulo.setForeground(new Color(255, 215, 0)); // Color Dorado
+        titulo.setForeground(new Color(255, 215, 0)); 
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
 
         JButton btnVerDatos = new JButton("a. Ver Mis Datos");
         JButton btnModificar = new JButton("b. Modificar Mis Datos");
         JButton btnEliminar = new JButton("c. Eliminar Cuenta");
-        JButton btnRegresar = new JButton("d. Regresar al Menú");
+        JButton btnRegresar = new JButton("d. Regresar al Menu");
 
         estilizarBotonMenu(btnVerDatos);
         estilizarBotonMenu(btnModificar);
         estilizarBotonMenu(btnEliminar);
         estilizarBotonMenu(btnRegresar);
         
-        // Opción A: Ver Datos
         btnVerDatos.addActionListener(e -> {
             Player actual = Battleship.currentUser;
             if (actual != null) {
@@ -303,18 +298,15 @@ public class Main extends JFrame {
                 sb.append("=========================================\n");
                 sb.append("           DATOS DEL JUGADOR             \n");
                 sb.append("=========================================\n\n");
-                
                 sb.append(String.format(" %-15s %s\n", "USUARIO:", actual.getUsername()));
                 sb.append(String.format(" %-15s %s\n", "CONTRASEÑA:", actual.getPassword()));
                 sb.append(String.format(" %-15s %d\n", "PUNTOS:", actual.getPuntos()));
                 sb.append(String.format(" %-15s %d\n", "TOTAL JUEGOS:", actual.getHistorial().size()));
-                
                 sb.append("\n=========================================\n");
                 sb.append("           HISTORIAL DE JUEGOS           \n");
                 sb.append("=========================================\n");
-                
                 if (actual.getHistorial().isEmpty()) {
-                    sb.append("\n (Sin registros aún)");
+                    sb.append("\n (Sin registros aun)");
                 } else {
                     for (String log : actual.getHistorial()) {
                         sb.append("\n - ").append(log);
@@ -324,14 +316,12 @@ public class Main extends JFrame {
             }
         });
 
-        // Opción B: Modificar Datos
         btnModificar.addActionListener(e -> {
             Player actual = Battleship.currentUser;
             String nuevoUser = JOptionPane.showInputDialog(this, "Ingrese nuevo Username:", actual.getUsername());
-            
             if (nuevoUser != null && !nuevoUser.trim().isEmpty()) {
                 if (!nuevoUser.equalsIgnoreCase(actual.getUsername()) && Battleship.buscarPlayer(nuevoUser) != null) {
-                    JOptionPane.showMessageDialog(this, "El nombre de usuario ya está en uso.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "El nombre de usuario ya esta en uso.", "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
                     String nuevoPass = JOptionPane.showInputDialog(this, "Ingrese nuevo Password:", actual.getPassword());
                     if (nuevoPass != null && !nuevoPass.trim().isEmpty()) {
@@ -343,16 +333,13 @@ public class Main extends JFrame {
             }
         });
 
-        // Opción C: Eliminar Cuenta
         btnEliminar.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this, 
-                "¿Estás seguro de que deseas ELIMINAR tu cuenta?\nEsta acción es irreversible.", 
+                "¿Estas seguro de que deseas ELIMINAR tu cuenta?\nEsta accion es irreversible.", 
                 "Eliminar Cuenta", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-            
             if (confirm == JOptionPane.YES_OPTION) {
                 Player aBorrar = Battleship.currentUser;
                 Battleship.listaPlayers.removeIf(p2 -> p2.getUsername().equals(aBorrar.getUsername()));
-                
                 Battleship.currentUser = null;
                 JOptionPane.showMessageDialog(this, "Cuenta eliminada. Hasta luego.");
                 limpiarLogin();
@@ -361,10 +348,8 @@ public class Main extends JFrame {
         });
 
         btnRegresar.addActionListener(e -> cardLayout.show(panelContenedor, "MENU_PRINCIPAL"));
-
         p.add(titulo); p.add(btnVerDatos); p.add(btnModificar); p.add(btnEliminar); 
         p.add(new JLabel()); p.add(new JLabel()); p.add(btnRegresar);
-
         return p;
     }
 
@@ -373,7 +358,7 @@ public class Main extends JFrame {
         JPanel p = new JPanel(new GridLayout(7, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
         p.setBackground(new Color(25, 25, 30));
-        JLabel titulo = new JLabel("CONFIGURACIÓN", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("CONFIGURACION", SwingConstants.CENTER);
         titulo.setForeground(Color.WHITE); titulo.setFont(new Font("Arial", Font.BOLD, 20));
         JButton btnDificultad = new JButton("A. Dificultad");
         JButton btnModoJuego = new JButton("B. Modo de Juego");

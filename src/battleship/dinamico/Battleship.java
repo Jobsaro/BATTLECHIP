@@ -8,9 +8,8 @@ public class Battleship {
     public static ArrayList<Player> listaPlayers = new ArrayList<>();
     public static Player currentUser = null; 
     
-    // REQUISITOS DE CONFIGURACIÓN
-    public static int cantidadBarcosDificultad = 4; // Default NORMAL
-    public static String modoJuego = "TUTORIAL";    // Default TUTORIAL
+    public static int cantidadBarcosDificultad = 4;
+    public static String modoJuego = "TUTORIAL";
 
     private List<Barco> barcos = new ArrayList<>();
     private boolean faseAtaque = false;
@@ -22,7 +21,6 @@ public class Battleship {
     
     private void configurarFlota() {
         barcos.clear();
-        // EASY: 5, NORMAL: 4, EXPERT: 2, GENIUS: 1
         if (cantidadBarcosDificultad >= 1) barcos.add(new Barco("Portaaviones", 2, 3));
         if (cantidadBarcosDificultad >= 2) barcos.add(new Barco("Acorazado", 4, 1));
         if (cantidadBarcosDificultad >= 3) barcos.add(new Barco("Submarino", 3, 1));
@@ -91,5 +89,15 @@ public class Battleship {
         int fila, col, alto, ancho;
         Barco(String n, int al, int an) { nombre = n; alto = al; ancho = an; }
         public void rotar() { int t = alto; alto = ancho; ancho = t; }
+
+        // metodo para detectar una destruccion
+        public boolean estaHundido(char[][] disparosOponente) {
+            for (int i = fila; i < fila + alto; i++) {
+                for (int j = col; j < col + ancho; j++) {
+                    if (disparosOponente[i][j] != 'X') return false;
+                }
+            }
+            return true;
+        }
     }
 }
