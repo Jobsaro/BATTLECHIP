@@ -158,7 +158,7 @@ public class Main extends JFrame {
                 return;
             }
             Battleship.listaPlayers.add(new Player(u, ps));
-            JOptionPane.showMessageDialog(this, "Registrado con éxito");
+            JOptionPane.showMessageDialog(this, "Registrado con exito");
             limpiarRegistro();
             cardLayout.show(panelContenedor, "LOGIN");
         });
@@ -172,15 +172,15 @@ public class Main extends JFrame {
         p.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
         p.setBackground(new Color(25, 25, 30));
 
-        JLabel titulo = new JLabel("MENÚ PRINCIPAL", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("MENU PRINCIPAL", SwingConstants.CENTER);
         titulo.setForeground(Color.WHITE);
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
 
-        JButton btnJugar = new JButton("1. Jugar Battleship");
-        JButton btnConfig = new JButton("2. Configuración");
-        JButton btnReportes = new JButton("3. Reportes");
-        JButton btnPerfil = new JButton("4. Mi Perfil");
-        JButton btnSalir = new JButton("5. Salir");
+        JButton btnJugar = new JButton("Jugar Battleship");
+        JButton btnConfig = new JButton("Configuración");
+        JButton btnReportes = new JButton("Reportes");
+        JButton btnPerfil = new JButton("Mi Perfil");
+        JButton btnSalir = new JButton("Salir");
 
         estilizarBotonMenu(btnJugar);
         estilizarBotonMenu(btnConfig);
@@ -223,9 +223,9 @@ public class Main extends JFrame {
         titulo.setForeground(new Color(0, 255, 150));
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
 
-        JButton btnUltimos = new JButton("a. Ultimos juegos");
-        JButton btnRanking = new JButton("b. Ranking de Jugadores");
-        JButton btnVolver = new JButton("c. Regresar al Menú");
+        JButton btnUltimos = new JButton("Ultimos juegos");
+        JButton btnRanking = new JButton("Ranking de Jugadores");
+        JButton btnVolver = new JButton("Regresar al Menú");
 
         estilizarBotonMenu(btnUltimos);
         estilizarBotonMenu(btnRanking);
@@ -281,10 +281,10 @@ public class Main extends JFrame {
         titulo.setForeground(new Color(255, 215, 0)); 
         titulo.setFont(new Font("Arial", Font.BOLD, 20));
 
-        JButton btnVerDatos = new JButton("a. Ver Mis Datos");
-        JButton btnModificar = new JButton("b. Modificar Mis Datos");
-        JButton btnEliminar = new JButton("c. Eliminar Cuenta");
-        JButton btnRegresar = new JButton("d. Regresar al Menu");
+        JButton btnVerDatos = new JButton("Ver Mis Datos");
+        JButton btnModificar = new JButton("Modificar Mis Datos");
+        JButton btnEliminar = new JButton("Eliminar Cuenta");
+        JButton btnRegresar = new JButton("Regresar al Menu");
 
         estilizarBotonMenu(btnVerDatos);
         estilizarBotonMenu(btnModificar);
@@ -353,16 +353,16 @@ public class Main extends JFrame {
         return p;
     }
 
-    // --- 6. PANEL DE CONFIGURACIÓN ---
+    // PANEL DE CONFIGURACION
     private JPanel crearPanelConfiguracion() {
         JPanel p = new JPanel(new GridLayout(7, 1, 10, 10));
         p.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
         p.setBackground(new Color(25, 25, 30));
         JLabel titulo = new JLabel("CONFIGURACION", SwingConstants.CENTER);
         titulo.setForeground(Color.WHITE); titulo.setFont(new Font("Arial", Font.BOLD, 20));
-        JButton btnDificultad = new JButton("A. Dificultad");
-        JButton btnModoJuego = new JButton("B. Modo de Juego");
-        JButton btnRegresar = new JButton("C. Regresar");
+        JButton btnDificultad = new JButton("Dificultad");
+        JButton btnModoJuego = new JButton("Modo de Juego");
+        JButton btnRegresar = new JButton("Regresar");
         estilizarBotonMenu(btnDificultad); estilizarBotonMenu(btnModoJuego); estilizarBotonMenu(btnRegresar);
         
         btnDificultad.addActionListener(e -> {

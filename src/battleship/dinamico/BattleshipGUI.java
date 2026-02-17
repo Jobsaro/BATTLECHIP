@@ -3,6 +3,8 @@ package battleship.dinamico;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BattleshipGUI extends JFrame {
     private JButton[][] botones = new JButton[8][8];
@@ -14,7 +16,7 @@ public class BattleshipGUI extends JFrame {
     private boolean turnoJugador1 = true;
     private JLabel lblTurno;
     
-    // Guardamos los objetos de Player para actualizar sus datos al final
+    private Map<String, Color> coloresBarcos = new HashMap<>();
     private Player player1, player2;
     private String nombreJ1, nombreJ2;
 
@@ -23,6 +25,8 @@ public class BattleshipGUI extends JFrame {
         this.player2 = p2;
         this.nombreJ1 = p1.getUsername().toUpperCase();
         this.nombreJ2 = p2.getUsername().toUpperCase();
+
+        inicializarColoresBarcos();
 
         setTitle("BATTLESHIP PRO - " + nombreJ1 + " VS " + nombreJ2);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -50,7 +54,6 @@ public class BattleshipGUI extends JFrame {
         panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JButton btnListo = new JButton("LISTO");
         JButton btnSalir = new JButton("ABANDONAR PARTIDA");
-        
         btnSalir.setBackground(new Color(150, 50, 50));
         btnSalir.setForeground(Color.WHITE);
 
@@ -66,27 +69,58 @@ public class BattleshipGUI extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    private void inicializarColoresBarcos() {
+        coloresBarcos.put("Portaaviones", new Color(255, 140, 0)); 
+        coloresBarcos.put("Acorazado", new Color(139, 0, 139));    
+        coloresBarcos.put("Submarino", new Color(34, 139, 34));    
+        coloresBarcos.put("Destructor", new Color(160, 82, 45));   
+        coloresBarcos.put("Fragata", new Color(218, 112, 214));    
+    }
+
+    private Color getColorBarco(String nombre) {
+        return coloresBarcos.getOrDefault(nombre, Color.GRAY);
+    }
+
     private void alHacerClic(int f, int c) {
         Battleship oponente = turnoJugador1 ? logicaJ2 : logicaJ1;
         char[][] misDisparos = turnoJugador1 ? disparosJ1 : disparosJ2;
 
         if (logicaJ1.isFaseAtaque() && logicaJ2.isFaseAtaque()) {
             if (misDisparos[f][c] != 0) return; 
+            
             Battleship.Barco b = oponente.getBarcoEn(f, c);
+            
             if (b != null) {
                 misDisparos[f][c] = 'X';
-                refrescarTablero();
+                // verificacion si se unde
+                boolean hundido = b.estaHundido(misDisparos);
                 
-                if (verificarVictoria(misDisparos, oponente)) {
-                    completarDatosYFinalizar();
+                if (hundido) {
+                    refrescarTablero(); 
+                    JOptionPane.showMessageDialog(this, "HAS DESTRUIDO EL " + b.nombre.toUpperCase() + " ENEMIGO!");
+                    
+                    oponente.eliminarBarco(b);
+                    
+                    misDisparos[f][c] = 0; 
+
+                    if (oponente.getBarcosList().isEmpty()) {
+                        completarDatosYFinalizar();
+                        return; 
+                    }
                 }
             } else {
                 misDisparos[f][c] = 'F';
-                refrescarTablero();
+            }
+            
+            refrescarTablero();
+
+            if (b == null) {
                 JOptionPane.showMessageDialog(this, "Al agua... Cambio de turno.");
                 cambiarTurnoVisual();
             }
+
         } else {
+            // fase de preparacion
             Battleship actual = turnoJugador1 ? logicaJ1 : logicaJ2;
             Battleship.Barco clicEn = actual.getBarcoEn(f, c);
             if (seleccionado == null) {
@@ -100,42 +134,19 @@ public class BattleshipGUI extends JFrame {
         }
     }
 
-    private boolean verificarVictoria(char[][] misDisparos, Battleship oponente) {
-        int impactosNecesarios = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (oponente.getBarcoEn(i, j) != null) impactosNecesarios++;
-            }
-        }
-
-        int impactosLogrados = 0;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (misDisparos[i][j] == 'X') impactosLogrados++;
-            }
-        }
-        return impactosLogrados == impactosNecesarios;
-    }
-
-    //se completan los datos de las demas clases
     private void completarDatosYFinalizar() {
         Player ganador = turnoJugador1 ? player1 : player2;
         Player perdedor = turnoJugador1 ? player2 : player1;
 
-        // Sumar puntos al ganador (3 puntos por victoria)
         ganador.addPuntos(3);
-
-        //Registrar en el historial de ambos
         ganador.registrarJuego("Victoria contra " + perdedor.getUsername());
         perdedor.registrarJuego("Derrota contra " + ganador.getUsername());
 
-        // Pantalla de victoria
         JPanel panelVic = new JPanel(new BorderLayout());
-        JLabel txt = new JLabel("<html><center>¡VICTORIA!<br><br><b>" + ganador.getUsername() + "</b> ha ganado.<br>+3 Puntos obtenidos.</center></html>", SwingConstants.CENTER);
+        JLabel txt = new JLabel("<html><center><h1>VICTORIA!</h1><br><b>" + ganador.getUsername() + "</b> ha destruido toda la flota enemiga.<br>+3 Puntos obtenidos.</center></html>", SwingConstants.CENTER);
         panelVic.add(txt);
 
         JOptionPane.showMessageDialog(this, panelVic, "Juego Terminado", JOptionPane.PLAIN_MESSAGE);
-        
         this.dispose();
     }
 
@@ -165,6 +176,9 @@ public class BattleshipGUI extends JFrame {
         char[][] misDisparos = turnoJugador1 ? disparosJ1 : disparosJ2;
         boolean faseAtaqueTotal = logicaJ1.isFaseAtaque() && logicaJ2.isFaseAtaque();
 
+        Color colorAgua = new Color(30, 144, 255); 
+        Color colorFallo = new Color(150, 200, 255); 
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 botones[i][j].setText("");
@@ -174,27 +188,26 @@ public class BattleshipGUI extends JFrame {
                     if (misDisparos[i][j] == 'X') {
                         botones[i][j].setBackground(Color.RED);
                         botones[i][j].setText("X");
-                        Battleship.Barco b = oponente.getBarcoEn(i, j);
-                        if (b != null && b.estaHundido(misDisparos)) {
-                            botones[i][j].setBorder(new LineBorder(Color.YELLOW, 3));
-                        }
                     } else if (misDisparos[i][j] == 'F') {
-                        botones[i][j].setBackground(new Color(150, 200, 255));
+                        botones[i][j].setBackground(colorFallo);
                         botones[i][j].setText("F");
                     } else {
-                        if (oponente.getBarcoEn(i, j) != null && Battleship.modoJuego.equalsIgnoreCase("TUTORIAL")) {
-                            botones[i][j].setBackground(Color.DARK_GRAY);
+                        // en fase de ataque si es el tutorial se muestran los barcos
+                        Battleship.Barco bOponente = oponente.getBarcoEn(i, j);
+                        if (bOponente != null && Battleship.modoJuego.equalsIgnoreCase("TUTORIAL")) {
+                            botones[i][j].setBackground(getColorBarco(bOponente.nombre));
                         } else {
-                            botones[i][j].setBackground(new Color(30, 144, 255));
+                            botones[i][j].setBackground(colorAgua);
                         }
                     }
                 } else {
+                    // Fase preparación
                     Battleship.Barco b = actual.getBarcoEn(i, j);
                     if (b != null) {
-                        botones[i][j].setBackground(Color.DARK_GRAY);
-                        if (b == seleccionado) botones[i][j].setBorder(new LineBorder(Color.YELLOW, 3));
+                        botones[i][j].setBackground(getColorBarco(b.nombre));
+                        if (b == seleccionado) botones[i][j].setBorder(new LineBorder(Color.WHITE, 3));
                     } else {
-                        botones[i][j].setBackground(new Color(30, 144, 255));
+                        botones[i][j].setBackground(colorAgua);
                     }
                 }
             }
@@ -203,6 +216,6 @@ public class BattleshipGUI extends JFrame {
 }
 /*
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new BattleshipGUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new BattleshipGUI().setVaisible(true));
     }
 */
